@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Interplanetary Survival Guide: Martian Map · Jezero Crater Marswalk Planner</title>
+<meta name="description" content="Interactive Mars surface-walk planner for Jezero Crater: terrain, slope, radiation and dust layers, three route options, live Mars time and a go / no-go survival assessment. Load the NASA HiRISE Jezero DTM for real terrain.">
+<meta name="theme-color" content="#050817">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Interplanetary Survival Guide: Martian Map">
+<meta property="og:description" content="Plan a safe Marswalk in Jezero Crater with terrain, radiation, dust and survival-reserve modelling.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/app.css?v=1.0.0">
+</head>
+<body>
+<div class="space-scene" aria-hidden="true">
+  <div class="galaxy g1"></div>
+  <div class="galaxy g2"></div>
+  <div class="planet p1"></div>
+  <div class="planet p2"></div>
+  <div class="comet c1"></div>
+  <div class="comet c2"></div>
+</div>
+<a class="skip" href="#main">Skip to mission control</a>
+<header role="banner">
+  <div><h1>🔴 <span>MARS</span> Survival Mission Control</h1><small>Interplanetary Survival Guide: Martian Map · Jezero Crater Marswalk planner</small></div>
+  <div class="controls">
+    <label class="muted">Ls (season) <input id="ls" type="range" min="0" max="359" value="180"></label>
+    <div class="mars-clock" aria-live="polite">
+      <div><span class="clock-label">MARS LOCAL TIME</span><b id="marsTime">--:--:--</b></div>
+      <small id="marsSol">JEZERO · MSD ---- · LMST · AUTO</small>
+    </div>
+    <div class="time-mode" aria-label="Mars time mode">
+      <button id="timeAuto" class="active" type="button">AUTO</button>
+      <button id="timeManual" type="button">MANUAL / FUTURE</button>
+    </div>
+    <div id="manualTimePanel" class="manual-time-panel" hidden>
+      <label>Future Sol + <input id="futureSol" type="number" min="0" step="1" value="0"></label>
+      <label>Mission hour <input id="futureHour" type="range" min="0" max="24" step="0.25" value="10"></label>
+      <output id="futureHourValue">10:00:00</output>
+    </div>
+    <select id="storm"><option value="0">Nominal weather</option><option value="1">Local dust storm</option><option value="2">Regional dust storm</option></select>
+    <button id="sep">☀ SEP event OFF</button>
+  </div>
+</header>
+
+
+<main id="main">
+<section class="global-locator" aria-label="Global Mars locator">
+ <div class="global-head">
+  <div><div class="global-title">MARS GLOBAL LOCATOR</div><div class="global-sub">Schematic outlines placed at true lat/lon · Jezero mission zone highlighted</div></div>
+  <span class="global-badge">MARS 2000 · SCHEMATIC</span>
+ </div>
+ <div class="mars-locator">
+  <svg viewBox="0 0 1200 320" role="img" aria-label="Tactical topographic global locator for Mars showing Jezero Crater, Gale Crater, Arcadia Planitia, Valles Marineris, Hellas Planitia and Olympus Mons">
+   <defs>
+    <linearGradient id="marsFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101315"/><stop offset=".5" stop-color="#171211"/><stop offset="1" stop-color="#090b0c"/></linearGradient>
+    <radialGradient id="terrainGlow"><stop offset="0" stop-color="#e8743b" stop-opacity=".12"/><stop offset="1" stop-color="#e8743b" stop-opacity="0"/></radialGradient>
+    <pattern id="microGrid" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M22 0H0V22" fill="none" stroke="rgba(220,225,225,.08)" stroke-width=".6"/></pattern>
+   </defs>
+
+   <!-- Tactical-board frame -->
+   <rect x="34" y="28" width="1132" height="252" class="topo-frame"/>
+   <rect x="35" y="29" width="1130" height="250" fill="url(#microGrid)"/>
+   <ellipse cx="600" cy="156" rx="510" ry="105" fill="url(#terrainGlow)"/>
+
+   <!-- Latitude / longitude grid -->
+   <g class="mars-grid">
+    <path d="M48 60H1152M48 108H1152M48 156H1152M48 204H1152M48 252H1152"/>
+    <path d="M232 40V268M416 40V268M600 40V268M784 40V268M968 40V268"/>
+   </g>
+   <path class="mars-equator" d="M48 156H1152"/>
+
+   <text x="52" y="18" class="topo-title">MARS GLOBAL TOPOGRAPHIC OVERVIEW</text>
+   <text x="1045" y="18" class="topo-small">N ↑</text>
+   <text x="38" y="57" class="topo-small">60°N</text><text x="38" y="105" class="topo-small">30°N</text><text x="38" y="153" class="topo-small">0°</text><text x="38" y="201" class="topo-small">30°S</text><text x="38" y="249" class="topo-small">60°S</text><text x="48" y="298" class="topo-small">Equirectangular · lon 0–360°E · lat ±60° grid · outlines schematic, centres to scale</text>
+   <text x="51" y="274" class="topo-small">0°E</text><text x="235" y="274" class="topo-small">60°E</text><text x="419" y="274" class="topo-small">120°E</text><text x="603" y="274" class="topo-small">180°E</text><text x="787" y="274" class="topo-small">240°E</text><text x="971" y="274" class="topo-small">300°E</text><text x="1118" y="274" class="topo-small">360°E</text>
+
+   <!-- Stylized global terrain masses: deliberately topographic, not a literal screenshot -->
+   <g aria-label="Arcadia Planitia contours" data-loc="Arcadia Planitia" class="loc-dot" transform="translate(382 -22)">
+    <path class="topo-contour fine" d="M196 83 C226 63 270 61 302 78 C321 88 327 109 315 122 C292 146 239 143 210 126 C190 114 182 98 196 83Z"/>
+    <path class="topo-contour" d="M210 88 C234 72 269 71 294 83 C309 91 312 106 302 116 C284 134 246 132 222 121 C205 113 199 99 210 88Z"/>
+    <path class="topo-contour inner" d="M231 91 C249 81 270 82 284 90 C294 96 294 104 286 111 C273 122 249 119 236 113 C226 108 223 98 231 91Z"/>
+    <text x="205" y="151" class="topo-tag">ARCADIA</text><text x="205" y="161" class="topo-small">PLANITIA · ~47°N · ~192°E</text>
+   </g>
+
+   <!-- Jezero: mission focus with contour-basin treatment -->
+   <g data-loc="Jezero Crater" class="loc-dot" transform="translate(-193 -12.4)">
+    <path class="topo-hatch" d="M410 104 C438 76 492 73 530 94 C560 111 568 145 548 169 C524 198 467 204 427 184 C392 166 389 128 410 104Z"/>
+    <path class="topo-contour" d="M421 107 C448 84 490 82 522 99 C548 113 555 142 539 164 C519 190 474 194 438 180 C408 168 401 131 421 107Z"/>
+    <path class="topo-contour inner" d="M439 116 C459 98 487 98 510 109 C528 118 533 138 521 153 C506 172 476 177 451 166 C428 156 424 131 439 116Z"/>
+    <path class="topo-contour fine" d="M454 122 C469 111 489 111 502 118 C514 125 516 137 508 146 C497 159 478 162 463 155 C449 149 445 132 454 122Z"/>
+    <ellipse class="jezero-ring" cx="478" cy="139" rx="37" ry="30"/>
+    <circle cx="478" cy="139" r="4.5" fill="var(--cyan)" stroke="#e7feff" stroke-width="1.4"/>
+    <!-- astronaut-style mission marker -->
+    <g class="topo-astro" transform="translate(474 151)"><circle cx="0" cy="-8" r="3.5"/><rect x="-4" y="-4" width="8" height="10" rx="2"/><path d="M-4 0L-7 5M4 0L7 5M-2 6L-3 11M2 6L3 11" stroke="#f4ece7" stroke-width="1.5" fill="none"/></g>
+    <text x="515" y="119" class="topo-tag">JEZERO CRATER</text><text x="515" y="130" class="topo-small">MISSION ZONE · 18.4°N · 77.4°E</text>
+   </g>
+
+   <!-- Gale -->
+   <g data-loc="Gale Crater" class="loc-dot" transform="translate(-245 -10.4)">
+    <path class="topo-contour fine" d="M665 157 C688 135 727 132 754 147 C774 158 778 181 763 198 C744 218 705 216 681 201 C660 188 651 172 665 157Z"/>
+    <path class="topo-contour" d="M676 161 C695 144 722 142 743 153 C759 162 762 178 751 190 C736 207 709 204 690 194 C673 185 664 171 676 161Z"/>
+    <path class="topo-contour inner" d="M694 165 C706 155 724 155 735 161 C744 167 744 176 737 183 C728 192 711 190 700 184 C690 179 688 171 694 165Z"/>
+    <text x="675" y="229" class="topo-tag">GALE</text><text x="675" y="239" class="topo-small">5.4°S · 137.7°E</text>
+   </g>
+
+   <!-- Hellas -->
+   <g data-loc="Hellas Planitia" class="loc-dot" transform="translate(-309 -6.7)">
+    <path class="topo-contour fine" d="M515 209 C547 187 592 185 625 204 C648 217 651 243 631 258 C605 278 559 276 529 261 C504 248 494 224 515 209Z"/>
+    <path class="topo-contour" d="M528 214 C553 197 586 196 612 208 C630 217 633 237 619 248 C600 264 566 263 542 253 C520 244 512 225 528 214Z"/>
+    <path class="topo-contour inner" d="M547 218 C562 209 582 209 596 216 C607 222 608 232 599 239 C587 248 568 247 555 241 C544 236 540 225 547 218Z"/>
+    <text x="650" y="255" class="topo-tag">HELLAS</text><text x="650" y="265" class="topo-small">~43°S · ~70°E</text>
+   </g>
+
+   <!-- Valles Marineris long canyon -->
+   <g data-loc="Valles Marineris" class="loc-dot">
+    <g transform="translate(970 178) scale(.485 1) translate(-858 -151)"><path class="loc-valles" d="M700 151 C758 140 816 143 873 151 C918 158 962 157 1016 146"/>
+    <path class="topo-hatch" d="M700 143 C758 132 816 135 873 143 C920 150 965 149 1020 138"/>
+    <path class="topo-hatch" d="M700 159 C758 148 816 151 873 159 C920 166 965 165 1020 154"/>
+    </g><text x="885" y="204" class="topo-tag">VALLES MARINERIS</text><text x="885" y="215" class="topo-small">CANYON SYSTEM · ~14°S · ~276–326°E</text>
+   </g>
+
+   <!-- Olympus Mons -->
+   <g data-loc="Olympus Mons" class="loc-dot" transform="translate(-254 38)">
+    <path class="topo-contour fine" d="M952 65 C978 44 1017 44 1043 65 C1064 82 1060 111 1038 126 C1013 143 978 138 956 121 C935 105 930 83 952 65Z"/>
+    <path class="topo-contour" d="M964 70 C984 54 1010 55 1029 69 C1045 82 1042 101 1027 112 C1009 126 984 123 968 111 C953 99 948 82 964 70Z"/>
+    <path class="topo-contour inner" d="M978 77 C989 68 1004 68 1014 76 C1023 83 1022 94 1013 101 C1003 109 989 107 980 101 C972 95 970 84 978 77Z"/>
+    <ellipse class="topo-hatch" cx="996" cy="88" rx="10" ry="6"/>
+    <text x="946" y="42" class="topo-tag">OLYMPUS MONS</text><text x="956" y="53" class="topo-small">18.7°N · 226°E</text>
+   </g>
+
+   <!-- Reference/target reticle -->
+   <g transform="translate(1084 205)" class="topo-cross">
+    <circle r="9" fill="none"/><circle r="3" fill="none"/><path d="M0-16V-9M0 9V16M-16 0H-9M9 0H16"/>
+   </g>
+   <text x="1052" y="231" class="topo-small">GLOBAL REF</text>
+   <text x="56" y="46" class="topo-small">TOPO / CONTOUR MODE</text>
+  </svg>
+  <div class="loc-legend"><span><i class="legend-dot legend-jezero"></i> Mission zone</span><span><i class="legend-dot legend-ref"></i> Major terrain</span><span><i class="legend-dot legend-feature"></i> Canyon / basin</span><span>Outline sizes are schematic</span></div>
+ </div>
+ <div class="global-foot"><span id="globalFocus" class="global-focus"><b>MISSION FOCUS:</b> Jezero Crater · global overview → tactical planner below (synthetic terrain until a DEM is loaded)</span><button id="focusJezero" class="focus-btn">↓ OPEN JEZERO TACTICAL MAP</button></div>
+</section>
+
+<section class="kpis">
+ <div class="kpi"><span>START dose</span><b id="dose">—</b></div>
+ <div class="kpi"><span>Air temperature</span><b id="temp">—</b></div>
+ <div class="kpi"><span>Storm status</span><b id="stormK">—</b></div>
+ <div class="kpi"><span>Selected route</span><b id="routeK">—</b></div>
+ <div class="kpi"><span>Return margin</span><b id="returnK">—</b></div>
+</section>
+
+<div class="grid">
+ <section>
+  <div class="panel">
+   <div class="row between">
+    <div class="row"><b>Map layer</b><button class="layer active" data-layer="0">Terrain</button><button class="layer" data-layer="1">Slope</button><button class="layer" data-layer="2">Radiation</button><button class="layer" data-layer="3">Dust</button></div>
+    <div class="row"><button id="startMode" class="active">Set START</button><button id="targetMode">Set TARGET</button></div>
+   </div>
+   <canvas id="map" width="900" height="619" role="img" aria-label="Interactive Jezero Crater terrain map. Click to place the START or TARGET marker; route options update automatically."></canvas>
+   <div id="tip" class="muted" aria-live="polite">Click the map to move START/TARGET. Slopes above 25° are rejected as not walkable.</div>
+  </div>
+  <div class="panel">
+   <div class="row between"><b>Selected route elevation / hazard profile</b><span class="pill" id="profileMeta">—</span></div>
+   <canvas id="profile" width="900" height="230" role="img" aria-label="Elevation profile of the selected route, with science stops marked"></canvas>
+  </div>
+ </section>
+
+ <aside>
+  <div class="tabs">
+   <button class="tab active" data-view="route">Route</button>
+   <button class="tab" data-view="survival">Survival</button>
+   <button class="tab" data-view="science">Science</button>
+   <button class="tab" data-view="data">NASA data</button>
+  </div>
+
+  <div id="route" class="view show">
+   <div class="panel"><b>Route options</b><div id="routes"></div></div>
+   <div class="panel"><b>Mission sequence</b><div id="steps"></div></div>
+   <div class="panel"><b>Route warnings</b><div id="warnings"></div></div>
+  </div>
+
+  <div id="survival" class="view">
+   <div class="panel">
+    <b>Survival reserve planner</b>
+    <p class="muted">New mission-control layer: adjust consumables before accepting the route.</p>
+    <label>Suit power reserve <input id="power" type="range" min="20" max="100" value="78"> <b id="powerV">78%</b></label>
+    <div class="bar"><i id="powerBar"></i></div><br>
+    <label>O₂ reserve <input id="o2" type="range" min="20" max="100" value="82"> <b id="o2V">82%</b></label>
+    <div class="bar"><i id="o2Bar"></i></div><br>
+    <label>Water reserve <input id="water" type="range" min="20" max="100" value="76"> <b id="waterV">76%</b></label>
+    <div class="bar"><i id="waterBar"></i></div>
+   </div>
+   <div class="panel"><b>Go / no-go assessment</b><div id="gono"></div></div>
+   <div class="panel"><b>Site conditions</b><table id="conditions"></table></div>
+  </div>
+
+  <div id="science" class="view">
+   <div class="panel"><b>Science targets</b><div id="targets"></div></div>
+  </div>
+
+  <div id="data" class="view">
+   <div class="panel"><b>NASA / mission data represented by the source map</b><table id="sources"></table></div>
+   <div class="panel dem-panel">
+    <div class="row between"><b>Jezero elevation model</b><span id="demStatus" class="dem-badge synthetic">SYNTHETIC MODEL</span></div>
+    <p class="muted">Starts with a <b>synthetic terrain model</b>. A real elevation raster can replace it. The planner accepts <b>GeoTIFF</b>, CSV, JSON, and NASA/HiRISE <b>PDS IMG</b>. For a detached HiRISE product, select the matching <b>.IMG + .LBL</b> files together. Large rasters are resampled to the planner grid in-browser.</p>
+    <div class="dem-actions">
+      <input id="dem" type="file" multiple accept=".json,.csv,.tif,.tiff,.img,.lbl">
+      <button id="loadJezero" type="button">Load NASA HiRISE Jezero DTM</button>
+      <button id="resetDEM" type="button">Reset model</button>
+    </div>
+    <div id="demProgress" class="dem-progress"><i></i></div>
+    <div id="demMeta" class="dem-meta">Terrain source: MODELED / SYNTHETIC · planner grid 160 × 110</div>
+    <div class="provenance-grid" aria-label="Data provenance">
+      <div id="provTerrain" class="prov model"><b>TERRAIN</b>MODELED / SYNTHETIC</div>
+      <div class="prov model"><b>RADIATION</b>MODELED FROM RAD CONTEXT</div>
+      <div class="prov model"><b>WEATHER &amp; DUST</b>MODELED FROM MEDA / REMS CONTEXT</div>
+      <div class="prov model"><b>MINERALOGY</b>SCIENCE TARGET REFERENCE</div>
+    </div>
+    <small class="muted">NASA reference product: <code>DTEEC_045994_1985_046060_1985_U01.IMG + .LBL</code> · 1 m/pixel · NASA/JPL-Caltech/University of Arizona. A REAL DEM status refers to terrain only; weather/radiation remain modeled unless separately sourced.</small>
+   </div>
+  </div>
+ </aside>
+</div>
+
+<section class="panel about" aria-labelledby="aboutH">
+ <h2 id="aboutH">Interplanetary Survival Guide: Martian Map</h2>
+ <p>The first astronauts on Mars will need the best possible map. This guide layers data from several NASA Mars missions into one view of a Marswalk at Jezero Crater: where to walk, what the conditions are, and what science is on the way.</p>
+ <div class="cols">
+  <div><b>Layered, integrated view</b><br>Terrain, slope, radiation and dust layers on one map, plus a global locator for context. Terrain comes from MOLA / HiRISE-class elevation data; load the real NASA HiRISE Jezero DTM in the NASA data tab.</div>
+  <div><b>Routes and destinations</b><br>Click to set START and TARGET. Direct, Safest and Science routes show distance, time, steepest slope, dose and an elevation profile. Slopes over 25° are treated as not walkable.</div>
+  <div><b>Current conditions</b><br>Live Mars local time (LMST at Jezero), current season (Ls), temperature, pressure, dust opacity and dust-storm scenarios, plus a solar particle event switch. Future sols can be simulated.</div>
+  <div><b>Safe and quick, with science</b><br>The Survival tab turns suit power, O₂ and water reserves into a go / no-go call. The Science tab and route stops cover delta, olivine and carbonate targets seen by CRISM and Mars 2020.</div>
+ </div>
+ <p><b>Honesty note:</b> terrain is synthetic until a DEM is loaded. Weather, dust and radiation are simple models informed by MEDA, REMS and RAD context, and are labelled MODELED in the interface. They are not live NASA measurements.</p>
+ <p>Credits: NASA/JPL-Caltech/University of Arizona (HiRISE), MOLA, CTX, CRISM, MEDA, REMS, RAD, THEMIS, GRS. Not flight software; not endorsed by NASA.</p>
+</section>
+</main>
+<footer>Global locator: feature centres are plotted at true lat/lon, outline shapes and sizes are schematic. Terrain is synthetic until a real DEM is loaded; the simulated crater is sized like real Jezero (~45 km across) but its shape is idealised. This is a planning/simulation interface, not flight-certified operational software. REAL DEM means the elevation raster came from the loaded file; it does not mean weather, radiation, or mineralogy layers are live NASA measurements. Those layers remain explicitly modeled/reference data unless separately connected to source observations.</footer>
+
+<script src="/js/app.js?v=1.0.0"></script>
+</body>
+</html>
